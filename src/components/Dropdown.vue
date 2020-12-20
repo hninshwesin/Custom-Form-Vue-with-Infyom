@@ -1,77 +1,68 @@
 <template>
-    <div>
-        <h4>*Select Product Name</h4>
-        <select v-on:submit.prevent v-model="product.name">
-            <option disabled value="">Please select one</option>
-            <option>Chocolate</option>
-            <option>Ice cream</option>
-            <option>Green Tea</option>
-            <option>Matcha</option>
-        </select>
-        <br>
-        <span>Name : {{ product.name }}</span>
-        <br>
-        <h4>*Select Product Price</h4>
-        <form v-on:submit.prevent>
-            <input type="radio" id="one" value="100" v-model="product.price">
-            <label for="one">100</label>
-            <br>
-            <input type="radio" id="two" value="300" v-model="product.price">
-            <label for="two">300</label>
-            <br>
-            <input type="radio" id="three" value="500" v-model="product.price">
-            <label for="three">500</label>
-            <br>
-            <input type="radio" id="four" value="700" v-model="product.price">
-            <label for="four">700</label>
-        </form>
-        <br>
-        <span>Price: {{ product.price }}</span>
-        <br>
-        <button class="btn btn-success" @click="createProduct(product)">Submit</button>
+  <div>
+    <h2 style="padding-top: 20px;">User Lists</h2>
+    <div class="card" v-for="(user, index) in info" :key="index">
+      <div class="card-section" style="padding-top: 20px;">
+        <h3>{{ index }}</h3>
+      </div>
+      <form v-on:submit.prevent="submit">
+        <div class="form-group" v-for="(form, index ) in user" :key="index" style="padding-bottom: 20px">
+          <select v-model="search">
+            <option v-for="(name, index) in form" :key="index">{{ name.model_name }}</option>
+          </select>
+<!--          <GetForm :databases="databases"></GetForm>-->
+<!--          <button class="btn btn-success" @click="submit(search)" style="padding: 5px">Submit</button>-->
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+
     </div>
+  </div>
 </template>
 
 <script>
-    import axios from "axios";
+import axios from "axios";
+// import GetForm from "@/components/GetForm";
 
-    export default {
-        name: "Dropdownold",
-        data(){
-            return {
-                product: {
-                    name: '',
-                    price: ''
-                }
-            }
-        },
-        methods: {
-            createProduct(product) {
-                const self = this
-                const API_URL = 'http://127.0.0.1:8000';
-                const URL = `${API_URL}/api/products?name=s${product.name}&price=${product.price}`
-                axios.post(URL,product).then(function (response) {
-                    const status = response.data.success;
-                    if (status) {
-                        self.$swal.fire({
-                            title: 'Created!',
-                            text: 'Your Product has been created!',
-                            icon: 'success',
-                            timer: 5000
-                        })
-                            .then(function () {
-                                self.$router.push({name: 'home'})
-
-                            })
-                    }
-                    console.log(status);
-                }).catch(error => {
-                    console.log(error)
-                });
-
-            }
-        },
+export default {
+  name: "Dropdown",
+  // components: {GetForm},
+  data() {
+    return {
+      info: [],
+      search : '',
+      databases : [],
     }
+  },
+  methods: {
+    submit(){
+      const self = this
+      const API_URL = 'http://127.0.0.1:8000';
+      const URL = `${API_URL}/api/json_model?model_name=${self.search}`
+      axios.post(URL).then(function (response) {
+         self.databases = response.data;
+         if (response.status === 200){
+
+           self.$router.push({name: 'create', params: {data1 : self.databases, data2 : self.search}})
+
+         }
+      }).catch(error => {
+        console.log(error)
+      });
+    }
+  },
+  mounted() {
+    const API_URL = 'http://127.0.0.1:8000';
+    const URL = `${API_URL}/api/user_form`
+    axios.get(URL).then((response) => {
+      this.info = response.data.data.users;
+    }).catch(error => {
+      console.log(error)
+    });
+  },
+}
 </script>
 
 <style scoped>
